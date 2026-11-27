@@ -367,7 +367,7 @@ export default function Home() {
 
       <footer className="page-footer">
         <span>LiveLingo · Experimental translation, not a perfect dub.</span>
-        <span>Video must expose audio to your browser. YouTube embeds are not supported.</span>
+        <span>YouTube videos are streamed through this app for playback and translation.</span>
       </footer>
     </main>
   );

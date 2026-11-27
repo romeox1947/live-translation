@@ -38,8 +38,8 @@ back to another translation provider.
 
 ## Video and audio limitations
 
-- Use a direct, publicly accessible MP4 or WebM URL. YouTube links and embedded
-  players are not supported.
+- Use a direct, publicly accessible MP4 or WebM URL, or a YouTube video/Shorts
+  link. YouTube streams are resolved by the server and proxied to the player.
 - Remote video hosts must permit cross-origin playback and audio access (CORS).
   Local MP4/WebM uploads avoid the remote-host CORS requirement.
 - Audio is streamed in real time while the video is playing; pausing or seeking

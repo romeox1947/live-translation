@@ -11,7 +11,7 @@ export function VideoUrlInput({ onLoad }: Props) {
   const [error, setError] = useState("");
   const fileInput = useRef<HTMLInputElement>(null);
 
-  function loadUrl(event: FormEvent<HTMLFormElement>) {
+  async function loadUrl(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
 
@@ -30,9 +30,24 @@ export function VideoUrlInput({ onLoad }: Props) {
       host === "youtube.com" ||
       host.endsWith(".youtube-nocookie.com")
     ) {
-      setError(
-        "YouTube links are not supported. Use a direct MP4/WebM URL or upload a video file.",
-      );
+      try {
+        const response = await fetch(
+          `/api/youtube/resolve?url=${encodeURIComponent(parsed.toString())}`,
+        );
+        const result = (await response.json()) as {
+          streamUrl?: string;
+          title?: string;
+          message?: string;
+        };
+        if (!response.ok || !result.streamUrl) {
+          setError(result.message || "Could not resolve this YouTube video.");
+          return;
+        }
+        const streamUrl = new URL(result.streamUrl, window.location.origin);
+        onLoad(streamUrl.toString(), result.title || "YouTube video");
+      } catch {
+        setError("Could not connect to the YouTube resolver.");
+      }
       return;
     }
     if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
@@ -73,7 +88,7 @@ export function VideoUrlInput({ onLoad }: Props) {
         <input
           id="video-url"
           type="url"
-          placeholder="Paste a direct MP4 or WebM video URL"
+          placeholder="Paste a direct MP4/WebM or YouTube URL"
           value={url}
           onChange={(event) => setUrl(event.target.value)}
         />
