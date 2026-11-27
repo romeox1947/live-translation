@@ -18,6 +18,7 @@ type ServerMessage = {
   sample_rate?: number;
   code?: string;
   message?: string;
+  error?: string;
 };
 
 function bytesToBase64(buffer: ArrayBuffer): string {
@@ -218,16 +219,20 @@ export function useRealtimeTranslation(videoRef: React.RefObject<HTMLVideoElemen
               return;
             }
 
-            if (message.message_type === "error") {
+            if (
+              message.message_type === "auth_error" ||
+              message.message_type === "error"
+            ) {
               const providerMessage =
+                message.error ??
                 message.message ??
                 "ElevenLabs could not start the translation session.";
-              setError(providerMessage);
-              setConnection("error");
               if (!settled) {
                 settled = true;
                 window.clearTimeout(timeout);
                 reject(new Error(providerMessage));
+              } else {
+                stop(providerMessage);
               }
               return;
             }
