@@ -271,7 +271,11 @@ export function useRealtimeTranslation(videoRef: React.RefObject<HTMLVideoElemen
                 ),
               );
             } else if (activeRef.current) {
-              stop("The translation connection closed. Check access and network, then retry.");
+              const closeReason = event.reason?.trim();
+              stop(
+                closeReason ||
+                  "The translation connection closed. Check access and network, then retry.",
+              );
             }
           };
         });

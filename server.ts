@@ -129,7 +129,6 @@ async function main() {
         started = true;
         if (configTimer) clearTimeout(configTimer);
         const query = new URLSearchParams({
-          authorization: `Bearer ${apiKey}`,
           target_language: message.targetLanguage,
           voice_id: voiceId,
           input_format: "pcm_16000",
@@ -143,6 +142,11 @@ async function main() {
 
         upstream = new WebSocket(
           `wss://api.elevenlabs.io/v1/translation/realtime?${query.toString()}`,
+          {
+            headers: {
+              "xi-api-key": apiKey,
+            },
+          },
         );
         upstream.on("open", () => {
           if (client.readyState === WebSocket.OPEN) {
@@ -157,7 +161,7 @@ async function main() {
         upstream.on("unexpected-response", (_request, response) => {
           const error = providerError(response.statusCode ?? 500);
           sendError(client, error.code, error.message);
-          client.close(1011, error.code);
+          client.close(1011, error.message);
           upstream?.terminate();
         });
         upstream.on("error", () => {
@@ -166,16 +170,25 @@ async function main() {
             "network",
             "Could not connect to ElevenLabs. Check the network and try again.",
           );
-          client.close(1011, "Provider connection failed");
+          client.close(1011, "Could not connect to ElevenLabs.");
         });
-        upstream.on("close", (code) => {
+        upstream.on("close", (code, reason) => {
           if (client.readyState === WebSocket.OPEN) {
             if (code !== 1000 && code !== 1005) {
+              const providerReason = reason.toString().trim();
+              const detail =
+                providerReason ||
+                "ElevenLabs closed the translation session unexpectedly.";
               sendError(
                 client,
                 "provider",
-                "ElevenLabs closed the translation session unexpectedly.",
+                detail,
               );
+              client.close(
+                1011,
+                `${detail} (provider close code ${code})`.slice(0, 123),
+              );
+              return;
             }
             client.close(1000, "Translation session ended");
           }

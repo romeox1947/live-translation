@@ -31,10 +31,24 @@ export async function GET(request: Request) {
       streamUrl: streamUrl.toString(),
     });
   } catch (caught) {
-    const message =
+    const rawMessage =
       caught instanceof Error
         ? caught.message
         : "Could not resolve this YouTube video.";
+    if (
+      rawMessage.includes("429") ||
+      rawMessage.toLowerCase().includes("too many requests")
+    ) {
+      return NextResponse.json(
+        {
+          message:
+            "YouTube is temporarily rate-limiting this server. Wait a few minutes and try again.",
+        },
+        { status: 429 },
+      );
+    }
+    const message =
+      rawMessage || "Could not resolve this YouTube video.";
     return NextResponse.json({ message }, { status: 422 });
   }
 }
