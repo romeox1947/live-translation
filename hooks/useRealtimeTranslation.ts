@@ -221,7 +221,8 @@ export function useRealtimeTranslation(videoRef: React.RefObject<HTMLVideoElemen
 
             if (
               message.message_type === "auth_error" ||
-              message.message_type === "error"
+              message.message_type === "error" ||
+              message.error
             ) {
               const providerMessage =
                 message.error ??
