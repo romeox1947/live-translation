@@ -144,7 +144,6 @@ async function main() {
           `wss://api.elevenlabs.io/v1/translation/realtime?${query.toString()}`,
           {
             headers: {
-              Authorization: `Bearer ${apiKey}`,
               "xi-api-key": apiKey,
             },
           },
